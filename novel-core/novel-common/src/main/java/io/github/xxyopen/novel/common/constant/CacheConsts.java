@@ -2,9 +2,6 @@ package io.github.xxyopen.novel.common.constant;
 
 /**
  * 缓存相关常量
- *
- * @author xiongxiaoyang
- * @date 2022/5/12
  */
 public class CacheConsts {
 

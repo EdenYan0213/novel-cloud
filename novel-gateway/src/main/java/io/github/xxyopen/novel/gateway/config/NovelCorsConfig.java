@@ -8,10 +8,6 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 /**
  * 全局跨域配置
- *
- * @author xiongxiaoyang
- * @version 1.0
- * @since 2020/5/27
  */
 @Configuration
 public class NovelCorsConfig {

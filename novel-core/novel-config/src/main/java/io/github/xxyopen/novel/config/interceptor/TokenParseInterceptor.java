@@ -12,9 +12,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Token 解析拦截器
- *
- * @author xiongxiaoyang
- * @date 2022/5/27
  */
 @Component
 @RequiredArgsConstructor
