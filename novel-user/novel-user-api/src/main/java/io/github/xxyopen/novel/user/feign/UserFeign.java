@@ -13,9 +13,6 @@ import java.util.List;
 
 /**
  * 用户微服务调用客户端
- *
- * @author xiongxiaoyang
- * @date 2023/3/29
  */
 @Component
 @FeignClient(value = "novel-user-service", fallback = UserFeign.UserFeignFallback.class)

@@ -40,9 +40,6 @@ import java.util.stream.Collectors;
 
 /**
  * 小说模块 服务实现类
- *
- * @author xiongxiaoyang
- * @date 2022/5/14
  */
 @Service
 @RequiredArgsConstructor

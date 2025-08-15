@@ -9,9 +9,6 @@ import java.time.LocalDateTime;
  * <p>
  * 小说评论回复
  * </p>
- *
- * @author xiongxiaoyang
- * @date 2022/05/11
  */
 @TableName("book_comment_reply")
 public class BookCommentReply implements Serializable {

@@ -8,9 +8,6 @@ import java.io.Serializable;
 
 /**
  * 用户信息 DTO
- *
- * @author xiongxiaoyang
- * @date 2022/5/18
  */
 @Data
 @Builder

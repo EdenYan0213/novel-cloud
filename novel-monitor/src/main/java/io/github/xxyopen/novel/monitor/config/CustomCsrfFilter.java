@@ -12,8 +12,7 @@ import org.springframework.web.util.WebUtils;
 import java.io.IOException;
 
 /**
- * @author xiongxiaoyang
- * @date 2023/3/29
+ * 过滤器，用于设置 CSRF Cookie
  */
 public class CustomCsrfFilter extends OncePerRequestFilter {
 
