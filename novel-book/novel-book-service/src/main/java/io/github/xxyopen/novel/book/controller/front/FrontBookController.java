@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * 前台门户-小说模块 API 控制器
  */
+@Slf4j
 @Tag(name = "FrontBookController", description = "前台门户-小说模块")
 @RestController
 @RequestMapping(ApiRouterConsts.API_FRONT_BOOK_URL_PREFIX)

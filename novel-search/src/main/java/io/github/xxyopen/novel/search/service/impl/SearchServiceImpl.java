@@ -169,6 +169,5 @@ public class SearchServiceImpl implements SearchService {
         });
 
         searchBuilder.query(q -> q.bool(boolQuery));
-
     }
 }

@@ -14,8 +14,7 @@ novel:
     # 文件上传配置
     upload:
       # 上传路径
-      path: /Users/xiongxiaoyang/upload
-
+      path: /Users/chuang.yan/code/idea/novel-cloud/upload
 management:
   # 端点启用配置
   endpoint:

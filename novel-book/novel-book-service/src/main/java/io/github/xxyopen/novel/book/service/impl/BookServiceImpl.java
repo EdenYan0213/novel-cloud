@@ -47,27 +47,16 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookCategoryCacheManager bookCategoryCacheManager;
-
     private final BookRankCacheManager bookRankCacheManager;
-
     private final BookInfoCacheManager bookInfoCacheManager;
-
     private final BookChapterCacheManager bookChapterCacheManager;
-
     private final BookContentCacheManager bookContentCacheManager;
-
     private final BookInfoMapper bookInfoMapper;
-
     private final BookChapterMapper bookChapterMapper;
-
     private final BookContentMapper bookContentMapper;
-
     private final BookCommentMapper bookCommentMapper;
-
     private final AmqpMsgManager amqpMsgManager;
-
     private final UserFeignManager userFeignManager;
-
     private static final Integer REC_BOOK_COUNT = 4;
 
     @Override
@@ -201,18 +190,11 @@ public class BookServiceImpl implements BookService {
         return RestResp.ok(bookCategoryCacheManager.listCategory(workDirection));
     }
 
-    @Lock(prefix = "userComment")
+    @Lock(prefix = "userComment", failCode = ErrorCodeEnum.USER_REQ_MANY)
     @Override
     public RestResp<Void> saveComment(
         @Key(expr = "#{userId + '::' + bookId}") BookCommentReqDto dto) {
-        // 校验用户是否已发表评论
-        QueryWrapper<BookComment> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_USER_ID, dto.getUserId())
-            .eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, dto.getBookId());
-        if (bookCommentMapper.selectCount(queryWrapper) > 0) {
-            // 用户已发表评论
-            return RestResp.fail(ErrorCodeEnum.USER_COMMENTED);
-        }
+        // Lock机制确保用户在短时间内不会重复提交评论
         BookComment bookComment = new BookComment();
         bookComment.setBookId(dto.getBookId());
         bookComment.setUserId(dto.getUserId());
@@ -226,38 +208,88 @@ public class BookServiceImpl implements BookService {
     @Override
     public RestResp<BookCommentRespDto> listNewestComments(Long bookId) {
         // 查询评论总数
-        QueryWrapper<BookComment> commentCountQueryWrapper = new QueryWrapper<>();
-        commentCountQueryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId);
-        Long commentTotal = bookCommentMapper.selectCount(commentCountQueryWrapper);
+        Long commentTotal = getCommentCount(bookId);
         BookCommentRespDto bookCommentRespDto = BookCommentRespDto.builder()
             .commentTotal(commentTotal).build();
+        
         if (commentTotal > 0) {
-
             // 查询最新的评论列表
-            QueryWrapper<BookComment> commentQueryWrapper = new QueryWrapper<>();
-            commentQueryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId)
-                .orderByDesc(DatabaseConsts.CommonColumnEnum.CREATE_TIME.getName())
-                .last(DatabaseConsts.SqlEnum.LIMIT_5.getSql());
-            List<BookComment> bookComments = bookCommentMapper.selectList(commentQueryWrapper);
-
-            // 查询评论用户信息，并设置需要返回的评论用户名
-            List<Long> userIds = bookComments.stream().map(BookComment::getUserId).toList();
-            List<UserInfoRespDto> userInfos = userFeignManager.listUserInfoByIds(userIds);
-            Map<Long, UserInfoRespDto> userInfoMap = userInfos.stream()
-                .collect(Collectors.toMap(UserInfoRespDto::getId, Function.identity()));
-            List<BookCommentRespDto.CommentInfo> commentInfos = bookComments.stream()
-                .map(v -> BookCommentRespDto.CommentInfo.builder()
-                    .id(v.getId())
-                    .commentUserId(v.getUserId())
-                    .commentUser(userInfoMap.get(v.getUserId()).getUsername())
-                    .commentUserPhoto(userInfoMap.get(v.getUserId()).getUserPhoto())
-                    .commentContent(v.getCommentContent())
-                    .commentTime(v.getCreateTime()).build()).toList();
+            List<BookComment> bookComments = getLatestComments(bookId);
+            
+            // 获取评论用户信息并构建响应
+            List<BookCommentRespDto.CommentInfo> commentInfos = buildCommentInfos(bookComments);
             bookCommentRespDto.setComments(commentInfos);
         } else {
             bookCommentRespDto.setComments(Collections.emptyList());
         }
+        
         return RestResp.ok(bookCommentRespDto);
+    }
+
+    /**
+     * 获取指定小说的评论总数
+     */
+    private Long getCommentCount(Long bookId) {
+        QueryWrapper<BookComment> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId);
+        return bookCommentMapper.selectCount(queryWrapper);
+    }
+
+    /**
+     * 获取指定小说的最新评论列表（限制5条）
+     */
+    private List<BookComment> getLatestComments(Long bookId) {
+        QueryWrapper<BookComment> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(DatabaseConsts.BookCommentTable.COLUMN_BOOK_ID, bookId)
+            .orderByDesc(DatabaseConsts.CommonColumnEnum.CREATE_TIME.getName())
+            .last(DatabaseConsts.SqlEnum.LIMIT_5.getSql());
+        return bookCommentMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 构建评论信息列表
+     */
+    private List<BookCommentRespDto.CommentInfo> buildCommentInfos(List<BookComment> bookComments) {
+        if (bookComments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 获取用户ID列表
+        List<Long> userIds = bookComments.stream()
+            .map(BookComment::getUserId)
+            .distinct()
+            .toList();
+
+        // 批量查询用户信息
+        List<UserInfoRespDto> userInfos = userFeignManager.listUserInfoByIds(userIds);
+        Map<Long, UserInfoRespDto> userInfoMap = userInfos.stream()
+            .collect(Collectors.toMap(UserInfoRespDto::getId, Function.identity()));
+
+        // 构建评论信息
+        return bookComments.stream()
+            .map(comment -> buildCommentInfo(comment, userInfoMap))
+            .filter(Objects::nonNull) // 过滤掉构建失败的评论
+            .toList();
+    }
+
+    /**
+     * 构建单个评论信息
+     */
+    private BookCommentRespDto.CommentInfo buildCommentInfo(BookComment comment, Map<Long, UserInfoRespDto> userInfoMap) {
+        UserInfoRespDto userInfo = userInfoMap.get(comment.getUserId());
+        if (userInfo == null) {
+            log.warn("用户信息不存在，跳过评论构建，userId: {}, commentId: {}", comment.getUserId(), comment.getId());
+            return null;
+        }
+
+        return BookCommentRespDto.CommentInfo.builder()
+            .id(comment.getId())
+            .commentUserId(comment.getUserId())
+            .commentUser(userInfo.getUsername())
+            .commentUserPhoto(userInfo.getUserPhoto())
+            .commentContent(comment.getCommentContent())
+            .commentTime(comment.getCreateTime())
+            .build();
     }
 
     @Override
@@ -305,6 +337,10 @@ public class BookServiceImpl implements BookService {
         bookInfo.setUpdateTime(LocalDateTime.now());
         // 保存小说信息
         bookInfoMapper.insert(bookInfo);
+        
+        // 发送小说信息更新的 MQ 消息，用于更新ES索引和缓存
+        amqpMsgManager.sendBookChangeMsg(bookInfo.getId());
+        
         return RestResp.ok();
     }
 

@@ -7,20 +7,14 @@ import io.github.xxyopen.novel.book.dto.req.BookPageReqDto;
 import io.github.xxyopen.novel.book.dto.req.ChapterAddReqDto;
 import io.github.xxyopen.novel.book.dto.req.ChapterPageReqDto;
 import io.github.xxyopen.novel.book.dto.resp.BookChapterRespDto;
-import io.github.xxyopen.novel.book.dto.resp.BookEsRespDto;
+import io.github.xxyopen.novel.book.dto.resp.BookContentAboutRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookInfoRespDto;
 import io.github.xxyopen.novel.book.feign.BookFeign;
 import io.github.xxyopen.novel.common.auth.UserHolder;
-import io.github.xxyopen.novel.common.constant.ErrorCodeEnum;
-import io.github.xxyopen.novel.common.req.PageReqDto;
 import io.github.xxyopen.novel.common.resp.PageRespDto;
 import io.github.xxyopen.novel.common.resp.RestResp;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 小说微服务调用 Feign 客户端管理
@@ -51,6 +45,10 @@ public class BookFeignManager {
 
     public RestResp<PageRespDto<BookChapterRespDto>> listPublishBookChapters(ChapterPageReqDto dto) {
         return bookFeign.listPublishBookChapters(dto);
+    }
+
+    public RestResp<BookContentAboutRespDto> getBookChapterContent(Long chapterId) {
+        return bookFeign.getBookContentAbout(chapterId);
     }
 
 

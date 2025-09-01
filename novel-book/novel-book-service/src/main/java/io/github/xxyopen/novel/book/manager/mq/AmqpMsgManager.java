@@ -22,6 +22,7 @@ public class AmqpMsgManager {
 
     /**
      * 发送小说信息改变消息
+     * 由于使用了Fanout交换机，消息会同时发送到ES更新队列和Redis更新队列
      */
     public void sendBookChangeMsg(Long bookId) {
         if (amqpEnabled) {

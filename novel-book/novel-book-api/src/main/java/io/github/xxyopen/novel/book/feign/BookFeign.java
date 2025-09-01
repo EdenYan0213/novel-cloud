@@ -2,6 +2,7 @@ package io.github.xxyopen.novel.book.feign;
 
 import io.github.xxyopen.novel.book.dto.req.*;
 import io.github.xxyopen.novel.book.dto.resp.BookChapterRespDto;
+import io.github.xxyopen.novel.book.dto.resp.BookContentAboutRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookEsRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookInfoRespDto;
 import io.github.xxyopen.novel.common.constant.ApiRouterConsts;
@@ -10,6 +11,8 @@ import io.github.xxyopen.novel.common.resp.PageRespDto;
 import io.github.xxyopen.novel.common.resp.RestResp;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -77,6 +80,12 @@ public interface BookFeign {
     @PostMapping(ApiRouterConsts.API_INNER_BOOK_URL_PREFIX + "/listPublishBookChapters")
     RestResp<PageRespDto<BookChapterRespDto>> listPublishBookChapters(ChapterPageReqDto dto);
 
+    /**
+     * 小说章节内容查询接口
+     */
+    @GetMapping(ApiRouterConsts.API_INNER_BOOK_URL_PREFIX + "/content/{chapterId}")
+    RestResp<BookContentAboutRespDto> getBookContentAbout(@PathVariable(value = "chapterId") Long chapterId);
+
     @Component
     class BookFeignFallback implements BookFeign {
 
@@ -123,6 +132,11 @@ public interface BookFeign {
         @Override
         public RestResp<PageRespDto<BookChapterRespDto>> listPublishBookChapters(ChapterPageReqDto dto) {
             return RestResp.ok(PageRespDto.of(dto.getPageNum(), dto.getPageSize(), 0, new ArrayList<>(0)));
+        }
+
+        @Override
+        public RestResp<BookContentAboutRespDto> getBookContentAbout(Long chapterId) {
+            return RestResp.ok(BookContentAboutRespDto.builder().build());
         }
     }
 

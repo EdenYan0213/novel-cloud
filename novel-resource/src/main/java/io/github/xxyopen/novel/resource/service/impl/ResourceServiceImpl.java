@@ -50,26 +50,56 @@ public class ResourceServiceImpl implements ResourceService {
     public RestResp<String> uploadImage(MultipartFile file) {
         LocalDateTime now = LocalDateTime.now();
         String savePath =
-            SystemConfigConsts.IMAGE_UPLOAD_DIRECTORY
-                + now.format(DateTimeFormatter.ofPattern("yyyy")) + File.separator
-                + now.format(DateTimeFormatter.ofPattern("MM")) + File.separator
-                + now.format(DateTimeFormatter.ofPattern("dd"));
+                SystemConfigConsts.IMAGE_UPLOAD_DIRECTORY
+                        + now.format(DateTimeFormatter.ofPattern("yyyy")) + File.separator
+                        + now.format(DateTimeFormatter.ofPattern("MM")) + File.separator
+                        + now.format(DateTimeFormatter.ofPattern("dd"));
         String oriName = file.getOriginalFilename();
         assert oriName != null;
         String saveFileName = IdWorker.get32UUID() + oriName.substring(oriName.lastIndexOf("."));
         File saveFile = new File(fileUploadPath + savePath, saveFileName);
-        if (!saveFile.getParentFile().exists()) {
-            boolean isSuccess = saveFile.getParentFile().mkdirs();
-            if (!isSuccess) {
+
+        // 确保父目录存在
+        File parentDir = saveFile.getParentFile();
+        if (!parentDir.exists()) {
+            // 使用 mkdirs() 创建所有必要的父目录
+            if (!parentDir.mkdirs()) {
+                log.error("无法创建目录: {}", parentDir.getAbsolutePath());
                 throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_ERROR);
             }
+        } else if (!parentDir.isDirectory()) {
+            log.error("路径已存在但不是目录: {}", parentDir.getAbsolutePath());
+            throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_ERROR);
+        } else if (!parentDir.canWrite()) {
+            log.error("目录没有写入权限: {}", parentDir.getAbsolutePath());
+            throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_ERROR);
         }
-        file.transferTo(saveFile);
-        if (Objects.isNull(ImageIO.read(saveFile))) {
-            // 上传的文件不是图片
-            Files.delete(saveFile.toPath());
-            throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_TYPE_NOT_MATCH);
+
+        try {
+            file.transferTo(saveFile);
+        } catch (IOException e) {
+            log.error("文件保存失败: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_ERROR);
         }
+
+        // 检查文件是否为有效图片
+        try {
+            if (Objects.isNull(ImageIO.read(saveFile))) {
+                // 上传的文件不是图片
+                Files.delete(saveFile.toPath());
+                throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_TYPE_NOT_MATCH);
+            }
+        } catch (IOException e) {
+            // 如果读取文件出错，也删除文件并抛出异常
+            try {
+                Files.deleteIfExists(saveFile.toPath());
+            } catch (IOException deleteEx) {
+                log.warn("删除无效文件失败: {}", saveFile.getAbsolutePath(), deleteEx);
+            }
+            log.error("文件读取失败: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCodeEnum.USER_UPLOAD_FILE_ERROR);
+        }
+
         return RestResp.ok(savePath + File.separator + saveFileName);
     }
 

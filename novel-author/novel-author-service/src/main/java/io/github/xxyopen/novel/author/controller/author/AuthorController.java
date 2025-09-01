@@ -8,6 +8,7 @@ import io.github.xxyopen.novel.book.dto.req.BookPageReqDto;
 import io.github.xxyopen.novel.book.dto.req.ChapterAddReqDto;
 import io.github.xxyopen.novel.book.dto.req.ChapterPageReqDto;
 import io.github.xxyopen.novel.book.dto.resp.BookChapterRespDto;
+import io.github.xxyopen.novel.book.dto.resp.BookContentAboutRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookInfoRespDto;
 import io.github.xxyopen.novel.common.auth.UserHolder;
 import io.github.xxyopen.novel.common.constant.ApiRouterConsts;
@@ -21,12 +22,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 作家后台-作家模块 API 控制器
  */
+@Slf4j
 @Tag(name = "AuthorController", description = "作家后台-作者模块")
 @SecurityRequirement(name = SystemConfigConsts.HTTP_AUTH_HEADER_NAME)
 @RestController
@@ -77,16 +80,28 @@ public class AuthorController {
     }
 
     /**
-     * 小说章节发布接口
+     * 小说章节发/更新布接口
      */
     @Operation(summary = "小说章节发布接口")
     @PostMapping("book/chapter/{bookId}")
+    @PutMapping("book/chapter/{bookId}")
     public RestResp<Void> publishBookChapter(
         @Parameter(description = "小说ID") @PathVariable("bookId") Long bookId,
         @Valid @RequestBody ChapterAddReqDto dto) {
         dto.setAuthorId(UserHolder.getAuthorId());
         dto.setBookId(bookId);
         return bookFeignManager.publishBookChapter(dto);
+    }
+
+
+    /**
+     * 小说章节查询接口
+     */
+    @Operation(summary = "小说章节查询接口")
+    @GetMapping("book/chapter/{chapterId}")
+    public RestResp<BookContentAboutRespDto> getBookChapter(
+            @Parameter(description = "章节ID") @PathVariable("chapterId") Long bookId){
+        return bookFeignManager.getBookChapterContent(bookId);
     }
 
     /**

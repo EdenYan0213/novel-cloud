@@ -31,11 +31,27 @@ public class AmqpConfig {
     }
 
     /**
+     * Redis book 缓存更新队列
+     */
+    @Bean
+    public Queue redisBookUpdateQueue() {
+        return new Queue(AmqpConsts.BookChangeMq.QUEUE_REDIS_UPDATE);
+    }
+
+    /**
      * Elasticsearch book 索引更新队列绑定到小说信息改变交换机
      */
     @Bean
     public Binding esBookUpdateQueueBinding() {
         return BindingBuilder.bind(esBookUpdateQueue()).to(bookChangeExchange());
+    }
+
+    /**
+     * Redis book 缓存更新队列绑定到小说信息改变交换机
+     */
+    @Bean
+    public Binding redisBookUpdateQueueBinding() {
+        return BindingBuilder.bind(redisBookUpdateQueue()).to(bookChangeExchange());
     }
 
 }

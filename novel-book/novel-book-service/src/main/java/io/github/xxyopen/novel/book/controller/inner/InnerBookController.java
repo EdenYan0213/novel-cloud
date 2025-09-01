@@ -2,6 +2,7 @@ package io.github.xxyopen.novel.book.controller.inner;
 
 import io.github.xxyopen.novel.book.dto.req.*;
 import io.github.xxyopen.novel.book.dto.resp.BookChapterRespDto;
+import io.github.xxyopen.novel.book.dto.resp.BookContentAboutRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookEsRespDto;
 import io.github.xxyopen.novel.book.dto.resp.BookInfoRespDto;
 import io.github.xxyopen.novel.book.service.BookService;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
 /**
  * 小说微服务内部调用接口
  */
+@Slf4j
 @Tag(name = "InnerBookController", description = "内部调用-小说模块")
 @RestController
 @RequestMapping(ApiRouterConsts.API_INNER_BOOK_URL_PREFIX)
@@ -107,6 +110,16 @@ public class InnerBookController {
     @PostMapping("listPublishBookChapters")
     public RestResp<PageRespDto<BookChapterRespDto>> listPublishBookChapters(@RequestBody ChapterPageReqDto dto) {
         return bookService.listBookChapters(dto);
+    }
+
+    /**
+     * 小说内容相关信息查询接口
+     */
+    @Operation(summary = "小说内容相关信息查询接口")
+    @GetMapping("content/{chapterId}")
+    public RestResp<BookContentAboutRespDto> getBookContentAbout(
+            @Parameter(description = "章节ID") @PathVariable("chapterId") Long chapterId) {
+        return bookService.getBookContentAbout(chapterId);
     }
 
 }
