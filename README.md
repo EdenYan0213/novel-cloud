@@ -6,8 +6,7 @@
 
 ## 项目简介
 
-novel 是一套基于时下最新 Java 技术栈 `Spring Boot 3` + `Vue 3` 开发的前后端分离学习型小说项目，配备 [保姆级教程](https://docs.xxyopen.com/course/novel) 手把手教你从零开始开发上线一套生产级别的 Java
-系统，由小说门户系统、作家后台管理系统、平台后台管理系统等多个子系统构成。包括小说推荐、作品检索、小说排行榜、小说阅读、小说评论、会员中心、作家专区、充值订阅、新闻发布等功能。
+novel 是一套基于时下最新 Java 技术栈 `Spring Boot 3` + `Vue 3` 开发的前后端分离学习型小说项目， 由小说门户系统、作家后台管理系统、平台后台管理系统等多个子系统构成。包括小说推荐、作品检索、小说排行榜、小说阅读、小说评论、会员中心、作家专区、充值订阅、新闻发布等功能。
 
 novel-cloud，基于 `Spring Cloud 2022` & `Spring Cloud Alibaba 2022` 构建。
 
@@ -21,8 +20,6 @@ novel-cloud，基于 `Spring Cloud 2022` & `Spring Cloud Alibaba 2022` 构建。
 - Nacos 3.0.0
 - JDK 17
 - Maven 3.8
-- IntelliJ IDEA 2021.3（可选）
-- Node 16.14
 
 ## 后端技术选型
 
@@ -46,7 +43,6 @@ novel-cloud，基于 `Spring Cloud 2022` & `Spring Cloud Alibaba 2022` 构建。
 | Elasticsearch        |     8.6.2      | 搜索引擎服务                            | [进入](https://www.elastic.co)                 |                       [进入](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)                        |
 | XXL-JOB              |     2.3.1      | 分布式任务调度平台                         | [进入](https://www.xuxueli.com/xxl-job)                 |                                             [进入](https://www.xuxueli.com/xxl-job)                                             |
 | Springdoc-openapi    |     2.0.0      | Swagger 3 接口文档自动生成                | [进入](https://github.com/springdoc/springdoc-openapi)                |                                                 [进入](https://springdoc.org/)                                                  |
-| Undertow             |  2.2.17.Final  | Java 开发的高性能 Web 服务器               | [进入](https://undertow.io) |                                         [进入](https://undertow.io/documentation.html)                                          |
 
 ## 项目结构
 
