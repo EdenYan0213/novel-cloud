@@ -34,7 +34,6 @@ public class CacheConfig {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
 
         List<CaffeineCache> caches = new ArrayList<>(CacheConsts.CacheEnum.values().length);
-        // 类型推断 var 非常适合 for 循环，JDK 10 引入，JDK 11 改进
         for (var c : CacheConsts.CacheEnum.values()) {
             if (c.isLocal()) {
                 Caffeine<Object, Object> caffeine = Caffeine.newBuilder().recordStats()

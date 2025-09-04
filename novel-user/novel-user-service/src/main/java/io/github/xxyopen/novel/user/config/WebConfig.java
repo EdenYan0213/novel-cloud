@@ -27,7 +27,6 @@ public class WebConfig implements WebMvcConfigurer {
             .excludePathPatterns(ApiRouterConsts.API_FRONT_USER_URL_PREFIX + "/register",
                 ApiRouterConsts.API_FRONT_USER_URL_PREFIX + "/login")
             .order(2);
-
     }
 
 }

@@ -1,5 +1,7 @@
 package io.github.xxyopen.novel.common.constant;
 
+import lombok.Getter;
+
 /**
  * 缓存相关常量
  */
@@ -130,14 +132,17 @@ public class CacheConsts {
         /**
          * 缓存的名字
          */
+        @Getter
         private String name;
         /**
          * 失效时间（秒） 0-永不失效
          */
+        @Getter
         private int ttl;
         /**
          * 最大容量
          */
+        @Getter
         private int maxSize;
 
         CacheEnum(int type, String name, int ttl, int maxSize) {
@@ -153,18 +158,6 @@ public class CacheConsts {
 
         public boolean isRemote() {
             return type >= 1;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getTtl() {
-            return ttl;
-        }
-
-        public int getMaxSize() {
-            return maxSize;
         }
 
     }

@@ -20,6 +20,7 @@ import io.github.xxyopen.novel.user.dto.req.UserRegisterReqDto;
 import io.github.xxyopen.novel.user.dto.resp.UserInfoRespDto;
 import io.github.xxyopen.novel.user.dto.resp.UserLoginRespDto;
 import io.github.xxyopen.novel.user.dto.resp.UserRegisterRespDto;
+import io.github.xxyopen.novel.user.manager.cache.UserInfoCacheManager;
 import io.github.xxyopen.novel.user.manager.redis.VerifyCodeManager;
 import io.github.xxyopen.novel.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserInfoMapper userInfoMapper;
+
+    private final UserInfoCacheManager userInfoCacheManager;
 
     private final VerifyCodeManager verifyCodeManager;
 
@@ -127,12 +130,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RestResp<Void> updateUserInfo(UserInfoUptReqDto dto) {
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId(dto.getUserId());
-        userInfo.setNickName(dto.getNickName());
-        userInfo.setUserPhoto(dto.getUserPhoto());
-        userInfo.setUserSex(dto.getUserSex());
-        userInfoMapper.updateById(userInfo);
+        // 使用缓存管理器更新用户信息，会自动更新Redis缓存
+        userInfoCacheManager.updateUser(dto);
         return RestResp.ok();
     }
 
